@@ -1,8 +1,12 @@
-from pydantic import BaseModel, field_validator, EmailStr
+from collections import namedtuple
+from typing import Any
+from typing_extensions import Self
+
+from pydantic import BaseModel, field_validator, EmailStr, Field, field_serializer
 import re
 
 class PersonBase(BaseModel):
-    name : str
+    name : str = Field(...,description="Enter person name", )
     email : EmailStr
 
     @field_validator("name")
@@ -14,6 +18,10 @@ class PersonBase(BaseModel):
         if not bool(re.match(pattern, value)):
             raise ValueError("name cannot contain numbers,special characters or symbols")
         return value
+
+    @field_serializer("name")
+    def serializer_name(self, value):
+        return value.title()
 
     @field_validator("email")
     @classmethod

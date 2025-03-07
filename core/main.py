@@ -72,8 +72,15 @@ def names_update(item_id: int = Path(), per: PersonRequestSchema= None):
 
 @app.get("/list_names")
 def get_list():
-    result = names_db
-    return JSONResponse(content=result, status_code=status.HTTP_200_OK)
+    validated_data = []
+    for item in names_db:
+        try:
+            person = PersonRequestSchema(**item)  # اعتبارسنجی با Pydantic
+            validated_data.append(person.model_dump())  # تبدیل به دیکشنری معتبر
+        except Exception as e:
+            return JSONResponse(content={"error": str(e)}, status_code=400)  # ارور در صورت نامعتبر بودن داده‌ها
+
+    return JSONResponse(content=validated_data, status_code=200)
 
 '''
 @app.post("/names")
