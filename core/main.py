@@ -1,15 +1,20 @@
 import random
 from fastapi import FastAPI, status, HTTPException, Query, Form, Body, UploadFile, File
 from fastapi.responses import JSONResponse
-from typing import Optional, List
+from typing import Optional, List, Union
 from contextlib import asynccontextmanager
+from dataclasses import dataclass
 
+
+app = FastAPI()
+
+'''
 @asynccontextmanager
 async def lifespan(app: FastAPI):
 
     print("Application startup")
     yield
-    print("Application shutdown")
+    print("Application shutdown")'''
 
 
 names_db = [
@@ -39,7 +44,18 @@ names_db = [
     },
 ]
 
-app = FastAPI(lifespan=lifespan)
+
+@dataclass
+class Item:
+    name: str
+
+
+@app.post("/items/")
+async def create_item(item: Item):
+    new_name = {"id": random.randint(1, 1000), "name": item.name}
+    names_db.append(new_name)
+    return new_name
+
 
 @app.get("/names")
 def names_list(search: Optional[str] = Query(default= None, alias="The ID of the item to get",
