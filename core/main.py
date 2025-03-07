@@ -1,6 +1,7 @@
-from fastapi import FastAPI, status, HTTPException
-
-
+import random
+from fastapi import FastAPI, status, HTTPException, Query
+from fastapi.responses import JSONResponse
+from typing import Optional
 names_db = [
     {
         "id": 1,
@@ -30,7 +31,47 @@ names_db = [
 
 app = FastAPI()
 
+@app.get("/names")
+def names_list(search: Optional[str] = Query(None, min_length=2,max_length=10 ,regex= '^[^0-9]*$' )):
+    result = names_db
+    if search:
+        result = [name for name in names_db if search.lower() in name["name"].lower()]
+    return JSONResponse(content=result,status_code=status.HTTP_200_OK)
 
+
+'''
+@app.get("/names/{item_id}")
+def names_detail(item_id: int):
+    for name in names_db:
+        if name["id"] == item_id:
+            return JSONResponse(content=name, status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Name not found")
+
+@app.post("/names")
+def names_create(name: str):
+    new_name = {"id": random.randint(1,1000), "name": name}
+    names_db.append(new_name)
+    return JSONResponse(content=new_name, status_code=status.HTTP_201_CREATED)
+
+@app.put("/names/{item_id}")
+def names_update(item_id: int, name: str):
+    for n in names_db:
+        if n["id"] == item_id:
+            n["name"] = name
+            return JSONResponse(content={"message": f"Name with ID {item_id} updated successfully"}, status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Name not found")
+
+@app.delete("/names/{item_id}")
+def names_delete(item_id: int):
+    for i, n in enumerate(names_db):
+        if n["id"] == item_id:
+            del names_db[i]
+            return JSONResponse(content={"message": f"Name with ID {item_id} deleted successfully"}, status_code=status.HTTP_204_NO_CONTENT)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Name not found")
+'''
+
+
+'''
 @app.get("/")
 def hello_world():
     return {"message": "hi reza"}
@@ -63,13 +104,12 @@ async def update_names(item_id : int, new_name: str):
         return {"your id does not found"}
 
 
-@app.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/items/{item_id}")
 async def delete_names(item_id : int):
     for name in names_db:
         if name["id"] == item_id:
             names_db.remove(name)
-            return {"details": "item is delete"}
-
+            return JSONResponse(content={"details": "item is delete successfully"}, status_code=status.HTTP_200_OK)
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="object not found")
 
 
@@ -79,7 +119,19 @@ def names_list():
     return names_db
 
 
-'''@app.get("/get_names")
+
+@app.get("/get_names")
+def get_name(search : Optional[str] = None):
+    result = names_db
+    if search:
+        result = [name for name in names_db if name["name"].lower() == search.lower() ]
+        if len(result) == 0:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="object not found")
+        return JSONResponse(content=result, status_code=status.HTTP_200_OK)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="object not found")
+
+
+@app.get("/get_names")
 def get_name(q : str | None = None):
     if q:
         return [name for name in names_db if name["name"] == q ]
