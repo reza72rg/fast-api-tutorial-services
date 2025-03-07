@@ -32,7 +32,9 @@ names_db = [
 app = FastAPI()
 
 @app.get("/names")
-def names_list(search: Optional[str] = Query(None, min_length=2,max_length=10 ,regex= '^[^0-9]*$' )):
+def names_list(search: Optional[str] = Query(default= None, alias="The ID of the item to get",
+                                             description="The id of the item to get",
+                                             min_length=2,max_length=10 ,regex= '^[^0-9]*$' )):
     result = names_db
     if search:
         result = [name for name in names_db if search.lower() in name["name"].lower()]
