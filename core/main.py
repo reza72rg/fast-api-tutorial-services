@@ -20,27 +20,18 @@ async def lifespan(app: FastAPI):
 names_db = [
     {
         "id": 1,
-        "name": "ali"
+        "name": "ali",
+        "email": "test@gmail.com"
     },
     {
         "id": 2,
-        "name": "maryam"
+        "name": "maryam",
+        "email": "test@gmail.com"
     },
     {
         "id": 3,
-        "name": "reza"
-    },
-    {
-        "id": 4,
-        "name": "ahmad"
-    },
-    {
-        "id": 5,
-        "name": "ali"
-    },
-    {
-        "id": 6,
-        "name": "reza"
+        "name": "reza",
+        "email": "test@gmail.com"
     },
 ]
 
@@ -54,7 +45,8 @@ class Item:
 async def create_item(item: PersonRequestSchema):
     new_name = {
         "id": random.randint(1, 1000),
-        "name": item.name
+        "name": item.name,
+        "email": item.email,
     }
     names_db.append(new_name)
     return JSONResponse(content=new_name, status_code=status.HTTP_201_CREATED)
