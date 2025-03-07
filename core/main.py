@@ -1,7 +1,7 @@
 import random
-from fastapi import FastAPI, status, HTTPException, Query
+from fastapi import FastAPI, status, HTTPException, Query, Form, Body, UploadFile, File
 from fastapi.responses import JSONResponse
-from typing import Optional
+from typing import Optional, List
 names_db = [
     {
         "id": 1,
@@ -41,6 +41,31 @@ def names_list(search: Optional[str] = Query(default= None, alias="The ID of the
     return JSONResponse(content=result,status_code=status.HTTP_200_OK)
 
 
+@app.post("/names")
+def names_create(name: str = Body(embed=True, title="User Name", description="The name of the user", min_length=3, max_length=20)):
+    new_name = {"id": random.randint(1,1000), "name": name}
+    names_db.append(new_name)
+    return JSONResponse(content=new_name, status_code=status.HTTP_201_CREATED)
+
+
+
+@app.post("/upload/")
+async def upload_file(file: bytes = File(...)):
+    return {"file_size": len(file)}
+
+
+@app.post("/uploadfile/")
+async def create_upload_file(file: UploadFile):
+    content = await file.read()
+    return {"filename": file.filename,"content_type": file.content_type, "file_size": len(content)}
+
+@app.post("/upload-multiple/")
+async def upload_multiple(files: List[UploadFile]):
+    return [
+        {"filename": file.filename, "content_type": file.content_type}
+        for file in files
+    ]
+
 '''
 @app.get("/names/{item_id}")
 def names_detail(item_id: int):
@@ -49,11 +74,7 @@ def names_detail(item_id: int):
             return JSONResponse(content=name, status_code=status.HTTP_200_OK)
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Name not found")
 
-@app.post("/names")
-def names_create(name: str):
-    new_name = {"id": random.randint(1,1000), "name": name}
-    names_db.append(new_name)
-    return JSONResponse(content=new_name, status_code=status.HTTP_201_CREATED)
+
 
 @app.put("/names/{item_id}")
 def names_update(item_id: int, name: str):
