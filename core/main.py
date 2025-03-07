@@ -2,6 +2,16 @@ import random
 from fastapi import FastAPI, status, HTTPException, Query, Form, Body, UploadFile, File
 from fastapi.responses import JSONResponse
 from typing import Optional, List
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+
+    print("Application startup")
+    yield
+    print("Application shutdown")
+
+
 names_db = [
     {
         "id": 1,
@@ -29,7 +39,7 @@ names_db = [
     },
 ]
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/names")
 def names_list(search: Optional[str] = Query(default= None, alias="The ID of the item to get",
@@ -47,7 +57,7 @@ def names_create(name: str = Body(embed=True, title="User Name", description="Th
     names_db.append(new_name)
     return JSONResponse(content=new_name, status_code=status.HTTP_201_CREATED)
 
-
+'''
 
 @app.post("/upload/")
 async def upload_file(file: bytes = File(...)):
@@ -65,8 +75,7 @@ async def upload_multiple(files: List[UploadFile]):
         {"filename": file.filename, "content_type": file.content_type}
         for file in files
     ]
-
-'''
+    
 @app.get("/names/{item_id}")
 def names_detail(item_id: int):
     for name in names_db:
